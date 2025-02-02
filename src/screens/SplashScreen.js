@@ -6,7 +6,8 @@ import { useNavigation } from "@react-navigation/native";
 const SplashScreen = () => {
   const navigation = useNavigation();
 
-  const scale = new Animated.Value(0.1);
+  // Анимационные значения
+  const scale = new Animated.Value(0.5);
   const opacity = new Animated.Value(0);
 
   useEffect(() => {
@@ -56,11 +57,15 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={{ transform: [{ scale }], opacity }}>
+      {/* SVG-сердце с исправленной формой */}
+      <Animated.View style={[styles.heartWrapper, { transform: [{ scale }], opacity }]}>
         <Svg width="150" height="150" viewBox="0 0 24 24" fill="none">
           <Path
-            d="M12 21s-6-4.35-10-9c-2.4-2.7-2-6.5 1-8.5 2.5-1.6 5.6-0.9 7 1.5 1.4-2.4 4.5-3.1 7-1.5 3 2 3.4 5.8 1 8.5-4 4.65-10 9-10 9z"
+            d="M12 21C11.7 21 6 16.9 3 13.2C0.5 10.2 1 6.5 3.8 4.4C6 2.8 9.3 3.2 11 5.5C12.7 3.2 16 2.8 18.2 4.4C21 6.5 21.5 10.2 19 13.2C16 16.9 12.3 21 12 21Z"
             fill="#FF6B81"
+            stroke="#FF6B81"
+            strokeWidth="1"
+            strokeLinejoin="round" // Делаем края плавными
           />
         </Svg>
       </Animated.View>
@@ -77,12 +82,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  heartWrapper: {
+    alignSelf: "center",
+  },
   text: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#FF6B81",
     position: "absolute",
-    bottom: 80,
+    bottom: 60,
   },
 });
 

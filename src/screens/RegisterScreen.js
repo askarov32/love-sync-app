@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Text, Alert } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import axios from "axios";
-import { COLORS, STYLES } from "../theme";
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -16,7 +15,7 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await axios.post("http://192.168.31.105:8080/api/auth/register", {
+      await axios.post("http://192.168.31.105:8080/api/auth/register", {
         email,
         password,
         name,
@@ -25,15 +24,11 @@ const RegisterScreen = ({ navigation }) => {
       Alert.alert("Успех", "Вы зарегистрированы!");
       navigation.navigate("Login");
     } catch (error) {
-      console.log("Ошибка регистрации:", error);
-
       let errorMessage = "Не удалось зарегистрироваться";
       if (error.response) {
         errorMessage = `Ошибка ${error.response.status}: ${error.response.data}`;
-      } else if (error.request) {
-        errorMessage = "Сервер не отвечает. Проверьте подключение.";
       } else {
-        errorMessage = error.message;
+        errorMessage = "Сервер не отвечает. Проверьте подключение.";
       }
 
       Alert.alert("Ошибка регистрации", errorMessage);
@@ -41,56 +36,60 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={STYLES.container}>
-      <View style={STYLES.card}>
-        <Text style={styles.title}>Регистрация</Text>
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <TextInput label="Name" value={name} onChangeText={setName} mode="outlined" style={styles.input} />
+        <TextInput label="Surname (Optional)" mode="outlined" style={styles.input} />
+        <TextInput label="Email" value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" style={styles.input} />
+        <TextInput label="Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
 
-        <TextInput
-          label="Имя"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          style={STYLES.input}
-        />
-        <TextInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          keyboardType="email-address"
-          style={STYLES.input}
-        />
-        <TextInput
-          label="Пароль"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={STYLES.input}
-        />
-
-        <Button mode="contained" onPress={handleRegister} style={STYLES.button}>
-          Зарегистрироваться
+        <Button mode="contained" onPress={handleRegister} style={styles.button}>
+          Sign Up
         </Button>
 
-        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-          <Text style={styles.link}>Уже есть аккаунт? Войти</Text>
-        </TouchableOpacity>
+        <Text style={styles.terms}>
+          By registering you agree to our{" "}
+          <Text style={styles.termsHighlight}>Terms of Use</Text> and{" "}
+          <Text style={styles.termsHighlight}>Privacy Policy</Text>
+        </Text>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: COLORS.textDark,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  card: {
+    width: "85%",
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: "#F8F8F8",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  input: {
     marginBottom: 15,
   },
-  link: {
-    color: COLORS.primary,
+  button: {
     marginTop: 10,
+    backgroundColor: "#000",
+  },
+  terms: {
+    textAlign: "center",
+    fontSize: 12,
+    marginTop: 10,
+    color: "#666",
+  },
+  termsHighlight: {
+    color: "red",
+    fontWeight: "bold",
   },
 });
 

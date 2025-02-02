@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet, Animated, Easing } from "react-native";
-import { Svg, Path } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
+import Svg, { G, Path } from "react-native-svg";
 
 const SplashScreen = () => {
   const navigation = useNavigation();
@@ -57,16 +57,15 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* SVG-сердце с исправленной формой */}
+      {/* Обновленный SVG-сердце */}
       <Animated.View style={[styles.heartWrapper, { transform: [{ scale }], opacity }]}>
-        <Svg width="150" height="150" viewBox="0 0 24 24" fill="none">
-          <Path
-            d="M12 21C11.7 21 6 16.9 3 13.2C0.5 10.2 1 6.5 3.8 4.4C6 2.8 9.3 3.2 11 5.5C12.7 3.2 16 2.8 18.2 4.4C21 6.5 21.5 10.2 19 13.2C16 16.9 12.3 21 12 21Z"
-            fill="#FF6B81"
-            stroke="#FF6B81"
-            strokeWidth="1"
-            strokeLinejoin="round" // Делаем края плавными
-          />
+        <Svg width="160" height="160" viewBox="0 0 24 24">
+          <G transform="translate(0 -1028.4)">
+            <Path
+              d="m7 1031.4c-1.5355 0-3.0784 0.5-4.25 1.7-2.3431 2.4-2.2788 6.1 0 8.5l9.25 9.8 9.25-9.8c2.279-2.4 2.343-6.1 0-8.5-2.343-2.3-6.157-2.3-8.5 0l-0.75 0.8-0.75-0.8c-1.172-1.2-2.7145-1.7-4.25-1.7z"
+              fill="#FF6B81"
+            />
+          </G>
         </Svg>
       </Animated.View>
 

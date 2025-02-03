@@ -63,7 +63,7 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       const response = await axios.post(
-        "http://192.168.31.105:8080/api/auth/login",
+        "http://172.20.10.2:8080/api/auth/login",
         {
           email,
           password,
@@ -105,9 +105,9 @@ const LoginScreen = ({ navigation }) => {
           style={styles.input}
           theme={{
             colors: {
-              primary: "#E63946", 
-              text: "#fff",
-              placeholder: "#bbb",
+              primary: "rgb(255, 255, 255)",
+              text: "rgb(0, 0, 0)",
+              placeholder: "rgb(240, 240, 240)",
               outline: "transparent",
             },
           }}
@@ -121,9 +121,9 @@ const LoginScreen = ({ navigation }) => {
           style={styles.input}
           theme={{
             colors: {
-              primary: "#E63946",
-              text: "#fff",
-              placeholder: "#bbb",
+              primary: "rgb(255, 255, 255)",
+              text: "rgb(255, 255, 255)",
+              placeholder: "rgb(252, 252, 252)",
               outline: "transparent",
             },
           }}
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: "rgba(255, 255, 255, 0.91)",
   },
   button: {
     marginTop: 10,

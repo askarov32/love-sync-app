@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, Animated, Easing } from "react-native";
+import { View, StyleSheet, Animated, Easing, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 import Svg, { G, Path } from "react-native-svg";
 
 const SplashScreen = () => {
@@ -55,27 +56,26 @@ const SplashScreen = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={["#1E1E2E", "#141414"]} style={styles.container}>
       <Animated.View style={[styles.heartWrapper, { transform: [{ scale }], opacity }]}>
         <Svg width="160" height="160" viewBox="0 0 24 24">
           <G transform="translate(0 -1028.4)">
             <Path
               d="m7 1031.4c-1.5355 0-3.0784 0.5-4.25 1.7-2.3431 2.4-2.2788 6.1 0 8.5l9.25 9.8 9.25-9.8c2.279-2.4 2.343-6.1 0-8.5-2.343-2.3-6.157-2.3-8.5 0l-0.75 0.8-0.75-0.8c-1.172-1.2-2.7145-1.7-4.25-1.7z"
-              fill="#FF6B81"
+              fill="#E63946"
             />
           </G>
         </Svg>
       </Animated.View>
 
-      <Animated.Text style={[styles.text, { opacity }]}>Love Sync</Animated.Text>
-    </View>
+      <Animated.Text style={[styles.text, { opacity }]}>LoveSync</Animated.Text>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -83,11 +83,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   text: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "bold",
-    color: "#FF6B81",
-    position: "absolute",
-    bottom: 60,
+    color: "#E63946",
+    marginTop: 20,
   },
 });
 

@@ -6,7 +6,6 @@ import Svg, { G, Path } from "react-native-svg";
 const SplashScreen = () => {
   const navigation = useNavigation();
 
-  // Анимационные значения
   const scale = new Animated.Value(0.5);
   const opacity = new Animated.Value(0);
 
@@ -57,7 +56,6 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Обновленный SVG-сердце */}
       <Animated.View style={[styles.heartWrapper, { transform: [{ scale }], opacity }]}>
         <Svg width="160" height="160" viewBox="0 0 24 24">
           <G transform="translate(0 -1028.4)">

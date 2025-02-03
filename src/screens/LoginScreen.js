@@ -1,12 +1,59 @@
-import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Alert,
+  Animated,
+} from "react-native";
 import { TextInput, Button } from "react-native-paper";
+import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SvgHeadphones from "../../assets/svgs/SvgHeadphones";
+import SvgGuitar from "../../assets/svgs/SvgGuitar";
+import SvgCamera from "../../assets/svgs/SvgCamera";
+import SvgBasketball from "../../assets/svgs/SvgBasketball";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const translateY = new Animated.Value(0);
+  const translateYBottom = new Animated.Value(0);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateY, {
+          toValue: 10,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translateYBottom, {
+          toValue: 8,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateYBottom, {
+          toValue: 0,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -15,14 +62,16 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await axios.post("http://192.168.31.105:8080/api/auth/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://192.168.31.105:8080/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
       const token = response.data.token;
       await AsyncStorage.setItem("authToken", token);
-
       Alert.alert("Успешный вход", "Вы вошли в систему!");
       navigation.navigate("Profile", { token });
     } catch (error) {
@@ -32,28 +81,71 @@ const LoginScreen = ({ navigation }) => {
       } else {
         errorMessage = "Сервер не отвечает. Проверьте подключение.";
       }
-
       Alert.alert("Ошибка", errorMessage);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={["#1E1E2E", "#141414"]} style={styles.container}>
+      <Animated.View style={[styles.svgTopLeft, { transform: [{ translateY }] }]}>
+        <SvgHeadphones width={80} height={80} />
+      </Animated.View>
+      <Animated.View style={[styles.svgTopRight, { transform: [{ translateY }] }]}>
+        <SvgCamera width={60} height={60} />
+      </Animated.View>
+
       <Text style={styles.title}>LoveSync</Text>
 
       <View style={styles.card}>
-        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" style={styles.input} />
-        <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
-
+        <TextInput
+          label="Your Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          style={styles.input}
+          theme={{
+            colors: {
+              primary: "#E63946", 
+              text: "#fff",
+              placeholder: "#bbb",
+              outline: "transparent",
+            },
+          }}
+        />
+        <TextInput
+          label="Your Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          mode="outlined"
+          style={styles.input}
+          theme={{
+            colors: {
+              primary: "#E63946",
+              text: "#fff",
+              placeholder: "#bbb",
+              outline: "transparent",
+            },
+          }}
+        />
         <Button mode="contained" onPress={handleLogin} style={styles.button}>
           Log in
         </Button>
 
+        <Animated.View style={[styles.svgBottomLeft, { transform: [{ translateY: translateYBottom }] }]}>
+          <SvgBasketball width={50} height={50} />
+        </Animated.View>
+        <Animated.View style={[styles.svgBottomRight, { transform: [{ translateY: translateYBottom }] }]}>
+          <SvgGuitar width={50} height={50} />
+        </Animated.View>
+
         <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-          <Text style={styles.link}>Already have an account? <Text style={styles.boldLink}>Sign in</Text></Text>
+          <Text style={styles.link}>
+            Don't have an account? <Text style={styles.boldLink}>Sign up</Text>
+          </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -62,40 +154,60 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 36,
     fontWeight: "bold",
-    color: "#000",
+    color: "#fff",
     marginBottom: 30,
   },
   card: {
     width: "85%",
     padding: 20,
-    borderRadius: 10,
-    backgroundColor: "#F8F8F8",
+    borderRadius: 15,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
     shadowRadius: 5,
   },
   input: {
     marginBottom: 15,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
   },
   button: {
     marginTop: 10,
-    backgroundColor: "#000",
+    backgroundColor: "#E63946",
   },
   link: {
     textAlign: "center",
     marginTop: 10,
     fontSize: 14,
-    color: "#666",
+    color: "#ddd",
   },
   boldLink: {
     fontWeight: "bold",
-    color: "#000",
+    color: "#E63946",
+  },
+  svgTopLeft: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+  },
+  svgTopRight: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+  },
+  svgBottomLeft: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+  },
+  svgBottomRight: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
   },
 });
 

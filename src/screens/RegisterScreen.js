@@ -40,21 +40,31 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!email || !password || !name) {
-      Alert.alert("Ошибка", "Все поля должны быть заполнены");
-      return;
+        Alert.alert("Ошибка", "Все поля должны быть заполнены");
+        return;
     }
 
     try {
-      await axios.post("http://172.20.10.2:8080/api/auth/register", {
-        email,
-        password,
-        name,
-      });
+        const response = await axios.post("http://192.168.31.105:8080/api/auth/register", {
+            email,
+            password,
+            name,
+        });
 
-      Alert.alert("Успех", "Вы зарегистрированы!");
-      navigation.navigate("Login");
+        const token = response.data.token;
+        console.log("Токен при регистрации:", token);
+
+        if (!token) {
+            Alert.alert("Ошибка", "Сервер не вернул токен.");
+            return;
+        }
+
+        await AsyncStorage.setItem("authToken", `Bearer ${token}`);
+        Alert.alert("Успех", "Вы зарегистрированы!");
+        navigation.navigate("Profile");
     } catch (error) {
-      Alert.alert("Ошибка регистрации", "Не удалось зарегистрироваться");
+        console.log("Ошибка регистрации:", error.response?.data || error.message);
+        Alert.alert("Ошибка", "Не удалось зарегистрироваться");
     }
   };
 

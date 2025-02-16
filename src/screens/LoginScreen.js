@@ -57,31 +57,36 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Ошибка", "Введите email и пароль");
-      return;
+        Alert.alert("Ошибка", "Введите email и пароль");
+        return;
     }
 
     try {
-      const response = await axios.post(
-        "http://172.20.10.2:8080/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+        const response = await axios.post(
+            "http://192.168.31.105:8080/api/auth/login",
+            { email, password }
+        );
 
-      const token = response.data.token;
-      await AsyncStorage.setItem("authToken", token);
-      Alert.alert("Успешный вход", "Вы вошли в систему!");
-      navigation.navigate("Profile", { token });
+        const token = response.data.token;
+        console.log("Полученный JWT:", token);
+
+        if (!token) {
+            Alert.alert("Ошибка", "Сервер не вернул токен.");
+            return;
+        }
+
+        await AsyncStorage.setItem("authToken", `Bearer ${token}`);
+        Alert.alert("Успешный вход", "Вы вошли в систему!");
+        navigation.navigate("Profile");
     } catch (error) {
-      let errorMessage = "Ошибка входа";
-      if (error.response) {
-        errorMessage = `Ошибка ${error.response.status}: ${error.response.data}`;
-      } else {
-        errorMessage = "Сервер не отвечает. Проверьте подключение.";
-      }
-      Alert.alert("Ошибка", errorMessage);
+        let errorMessage = "Ошибка входа";
+        if (error.response) {
+            errorMessage = `Ошибка ${error.response.status}: ${error.response.data}`;
+        } else {
+            errorMessage = "Сервер не отвечает. Проверьте подключение.";
+        }
+        console.log("Ошибка входа:", errorMessage);
+        Alert.alert("Ошибка", errorMessage);
     }
   };
 

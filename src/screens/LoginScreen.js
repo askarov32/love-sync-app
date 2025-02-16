@@ -37,9 +37,15 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
+      console.log("Попытка входа...");
       await login(email, password);
-      Alert.alert("Успех", "Вы вошли в систему!");
+      console.log("✅ Вход успешный, user должен обновиться!");
+
+      setTimeout(() => {
+        navigation.replace("Profile");
+      }, 500);
     } catch (error) {
+      console.log("❌ Ошибка входа:", error);
       Alert.alert("Ошибка", error);
     }
   };

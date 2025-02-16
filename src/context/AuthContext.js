@@ -28,11 +28,22 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log("📡 Отправка запроса на вход...");
       const { token } = await loginUser(email, password);
+
+      if (!token) {
+        throw new Error("⚠️ Сервер не вернул токен!");
+      }
+
       await AsyncStorage.setItem("authToken", `Bearer ${token}`);
+      console.log("✅ Токен сохранен, загружаем профиль...");
+
       const userData = await fetchProfile();
+      console.log("✅ Профиль загружен:", userData);
+
       setUser(userData);
     } catch (error) {
+      console.log("❌ Ошибка в login():", error);
       throw error;
     }
   };
@@ -55,6 +66,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {console.log("🔍 AuthContext user:", user)}
       {children}
     </AuthContext.Provider>
   );

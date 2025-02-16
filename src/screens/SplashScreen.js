@@ -1,11 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { View, StyleSheet, Animated, Easing, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { AuthContext } from "../context/AuthContext";
 import Svg, { G, Path } from "react-native-svg";
 
 const SplashScreen = () => {
   const navigation = useNavigation();
+  const { user, loading } = useContext(AuthContext);
 
   const scale = new Animated.Value(0.5);
   const opacity = new Animated.Value(0);
@@ -48,12 +50,18 @@ const SplashScreen = () => {
         duration: 1500,
         useNativeDriver: true,
       }),
-    ]).start(() => {
+    ]).start();
+
+    const checkAuth = async () => {
       setTimeout(() => {
-        navigation.replace("Login");
+        if (!loading) {
+          navigation.replace(user ? "Profile" : "Login");
+        }
       }, 2500);
-    });
-  }, []);
+    };
+
+    checkAuth();
+  }, [user, loading]);
 
   return (
     <LinearGradient colors={["#1E1E2E", "#141414"]} style={styles.container}>

@@ -1,38 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, Alert, StyleSheet, TouchableOpacity, Image } from "react-native";
-import axios from "axios";
+import { View, Text, Button, Alert, StyleSheet, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
+import { fetchProfile, uploadProfileImage } from "../utils/api";
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadProfile = async () => {
       try {
-        const token = await AsyncStorage.getItem("authToken");
-        if (!token) {
-          Alert.alert("Ошибка", "Токен не найден, войдите снова.");
-          navigation.navigate("Login");
-          return;
-        }
-
-        const response = await axios.get("http://192.168.31.105:8080/api/auth/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setUser(response.data);
-        setProfileImage(response.data.profileImage);
+        const userData = await fetchProfile();
+        setUser(userData);
+        setProfileImage(userData.profileImage);
       } catch (error) {
-        console.log("Ошибка получения профиля:", error.response?.data || error.message);
-        Alert.alert("Ошибка", "Не удалось загрузить профиль");
+        Alert.alert("Ошибка", error);
         navigation.navigate("Login");
       }
     };
-
-    fetchProfile();
+    loadProfile();
   }, []);
 
   const pickImage = async () => {
@@ -46,43 +34,12 @@ const ProfileScreen = ({ navigation }) => {
     if (!result.canceled) {
       const uri = result.assets[0].uri;
       setProfileImage(uri);
-      await uploadImage(uri);
-    }
-  };
-
-  const uploadImage = async (uri) => {
-    try {
-        const token = await AsyncStorage.getItem("authToken");
-        console.log("Отправляемый токен:", token);
-
-        if (!token) {
-            Alert.alert("Ошибка", "Токен не найден.");
-            return;
-        }
-
-        let formData = new FormData();
-        formData.append("file", {
-            uri,
-            name: "profile.jpg",
-            type: "image/jpeg",
-        });
-
-        const response = await axios.put(
-            `http://192.168.31.105:8080/api/profile/${user.id}/upload`,
-            formData,
-            {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data",
-                },
-            }
-        );
-
-        setProfileImage(response.data.profileImage);
-        Alert.alert("Успех", "Фото успешно загружено!");
-    } catch (error) {
-        console.log("Ошибка загрузки изображения:", error.response?.data || error.message);
-        Alert.alert("Ошибка", "Не удалось загрузить фото");
+      try {
+        await uploadProfileImage(user.id, uri);
+        Alert.alert("Успех", "Фото загружено!");
+      } catch (error) {
+        Alert.alert("Ошибка", error);
+      }
     }
   };
 
@@ -99,7 +56,6 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
           <Text style={styles.title}>{user.name}</Text>
           <Text style={styles.text}>Email: {user.email}</Text>
-          {user.bio && <Text style={styles.text}>Bio: {user.bio}</Text>}
           <Button title="Выйти" onPress={async () => {
             await AsyncStorage.removeItem("authToken");
             navigation.navigate("Login");
@@ -113,7 +69,11 @@ const ProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   card: {
     width: "85%",
     padding: 20,
@@ -139,8 +99,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
   },
-  title: { fontSize: 24, fontWeight: "bold", color: "#fff", marginBottom: 10 },
-  text: { fontSize: 16, color: "#ddd", marginBottom: 10 },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 10,
+  },
+  text: {
+    fontSize: 16,
+    color: "#ddd",
+    marginBottom: 10,
+  },
 });
 
 export default ProfileScreen;

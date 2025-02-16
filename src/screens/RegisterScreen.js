@@ -1,25 +1,18 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  Alert,
-  Animated,
-} from "react-native";
+import React, { useState, useContext, useRef, useEffect } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, Alert, Animated } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from "../context/AuthContext";
 import SvgBasketball from "../../assets/svgs/SvgBasketball";
 import SvgGuitar from "../../assets/svgs/SvgGuitar";
 
 const RegisterScreen = ({ navigation }) => {
+  const { register } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  const translateYBottom = new Animated.Value(0);
+  const translateYBottom = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
@@ -40,31 +33,15 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!email || !password || !name) {
-        Alert.alert("Ошибка", "Все поля должны быть заполнены");
-        return;
+      Alert.alert("Ошибка", "Все поля должны быть заполнены");
+      return;
     }
 
     try {
-        const response = await axios.post("http://192.168.31.105:8080/api/auth/register", {
-            email,
-            password,
-            name,
-        });
-
-        const token = response.data.token;
-        console.log("Токен при регистрации:", token);
-
-        if (!token) {
-            Alert.alert("Ошибка", "Сервер не вернул токен.");
-            return;
-        }
-
-        await AsyncStorage.setItem("authToken", `Bearer ${token}`);
-        Alert.alert("Успех", "Вы зарегистрированы!");
-        navigation.navigate("Profile");
+      await register(email, password, name);
+      Alert.alert("Успех", "Вы зарегистрированы!");
     } catch (error) {
-        console.log("Ошибка регистрации:", error.response?.data || error.message);
-        Alert.alert("Ошибка", "Не удалось зарегистрироваться");
+      Alert.alert("Ошибка", error);
     }
   };
 
@@ -73,33 +50,9 @@ const RegisterScreen = ({ navigation }) => {
       <Text style={styles.title}>Sign Up</Text>
 
       <View style={styles.card}>
-        <TextInput
-          label="Your Name"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          style={styles.input}
-          theme={{ colors: { text: "#fff", placeholder: "#bbb", outline: "transparent" } }}
-        />
-        <TextInput
-          label="Your Email"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          keyboardType="email-address"
-          style={styles.input}
-          theme={{ colors: { text: "#fff", placeholder: "#bbb", outline: "transparent" } }}
-        />
-        <TextInput
-          label="Your Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={styles.input}
-          theme={{ colors: { text: "#fff", placeholder: "#bbb", outline: "transparent" } }}
-        />
-
+        <TextInput label="Your Name" value={name} onChangeText={setName} mode="outlined" style={styles.input} />
+        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" style={styles.input} />
+        <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
         <Button mode="contained" onPress={handleRegister} style={styles.button}>
           Sign Up
         </Button>

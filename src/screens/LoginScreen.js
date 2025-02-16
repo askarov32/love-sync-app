@@ -1,92 +1,46 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  Alert,
-  Animated,
-} from "react-native";
+import React, { useState, useContext, useRef, useEffect } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, Alert, Animated } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from "../context/AuthContext";
 import SvgHeadphones from "../../assets/svgs/SvgHeadphones";
-import SvgGuitar from "../../assets/svgs/SvgGuitar";
 import SvgCamera from "../../assets/svgs/SvgCamera";
 import SvgBasketball from "../../assets/svgs/SvgBasketball";
+import SvgGuitar from "../../assets/svgs/SvgGuitar";
 
 const LoginScreen = ({ navigation }) => {
+  const { login } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const translateY = new Animated.Value(0);
-  const translateYBottom = new Animated.Value(0);
+  const translateY = useRef(new Animated.Value(0)).current;
+  const translateYBottom = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateY, {
-          toValue: 10,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
+    const startAnimation = (animatedValue, toValue, duration) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(animatedValue, { toValue, duration, useNativeDriver: true }),
+          Animated.timing(animatedValue, { toValue: 0, duration, useNativeDriver: true }),
+        ])
+      ).start();
+    };
 
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateYBottom, {
-          toValue: 8,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateYBottom, {
-          toValue: 0,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
+    startAnimation(translateY, 10, 1500);
+    startAnimation(translateYBottom, 8, 1800);
   }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
-        Alert.alert("Ошибка", "Введите email и пароль");
-        return;
+      Alert.alert("Ошибка", "Введите email и пароль");
+      return;
     }
 
     try {
-        const response = await axios.post(
-            "http://192.168.31.105:8080/api/auth/login",
-            { email, password }
-        );
-
-        const token = response.data.token;
-        console.log("Полученный JWT:", token);
-
-        if (!token) {
-            Alert.alert("Ошибка", "Сервер не вернул токен.");
-            return;
-        }
-
-        await AsyncStorage.setItem("authToken", `Bearer ${token}`);
-        Alert.alert("Успешный вход", "Вы вошли в систему!");
-        navigation.navigate("Profile");
+      await login(email, password);
+      Alert.alert("Успех", "Вы вошли в систему!");
     } catch (error) {
-        let errorMessage = "Ошибка входа";
-        if (error.response) {
-            errorMessage = `Ошибка ${error.response.status}: ${error.response.data}`;
-        } else {
-            errorMessage = "Сервер не отвечает. Проверьте подключение.";
-        }
-        console.log("Ошибка входа:", errorMessage);
-        Alert.alert("Ошибка", errorMessage);
+      Alert.alert("Ошибка", error);
     }
   };
 
@@ -102,37 +56,8 @@ const LoginScreen = ({ navigation }) => {
       <Text style={styles.title}>LoveSync</Text>
 
       <View style={styles.card}>
-        <TextInput
-          label="Your Email"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          style={styles.input}
-          theme={{
-            colors: {
-              primary: "rgb(255, 255, 255)",
-              text: "rgb(0, 0, 0)",
-              placeholder: "rgb(240, 240, 240)",
-              outline: "transparent",
-            },
-          }}
-        />
-        <TextInput
-          label="Your Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={styles.input}
-          theme={{
-            colors: {
-              primary: "rgb(255, 255, 255)",
-              text: "rgb(255, 255, 255)",
-              placeholder: "rgb(252, 252, 252)",
-              outline: "transparent",
-            },
-          }}
-        />
+        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" style={styles.input} />
+        <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
         <Button mode="contained" onPress={handleLogin} style={styles.button}>
           Log in
         </Button>
@@ -155,17 +80,8 @@ const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 30,
-  },
+  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 36, fontWeight: "bold", color: "#fff", marginBottom: 30 },
   card: {
     width: "85%",
     padding: 20,
@@ -176,43 +92,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
-  input: {
-    marginBottom: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.91)",
+  input: { marginBottom: 15, backgroundColor: "rgba(255, 255, 255, 0.91)" },
+  button: { marginTop: 10, backgroundColor: "#E63946" },
+  link: { textAlign: "center", marginTop: 10, fontSize: 14, color: "#ddd" },
+  boldLink: { fontWeight: "bold", color: "#E63946" },
+  svgTopLeft: { position: "absolute", top: 50, left: 20 },
+  svgTopRight: { position: "absolute", top: 50, right: 20 },
+
+  svgBottomLeft: { 
+    position: "absolute", 
+    bottom: -220,
+    left: -20 
   },
-  button: {
-    marginTop: 10,
-    backgroundColor: "#E63946",
-  },
-  link: {
-    textAlign: "center",
-    marginTop: 10,
-    fontSize: 14,
-    color: "#ddd",
-  },
-  boldLink: {
-    fontWeight: "bold",
-    color: "#E63946",
-  },
-  svgTopLeft: {
-    position: "absolute",
-    top: 40,
-    left: 20,
-  },
-  svgTopRight: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-  },
-  svgBottomLeft: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-  },
-  svgBottomRight: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
+  svgBottomRight: { 
+    position: "absolute", 
+    bottom: -220,
+    right: -10 
   },
 });
 

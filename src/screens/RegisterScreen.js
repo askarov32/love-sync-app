@@ -3,8 +3,10 @@ import { View, StyleSheet, TouchableOpacity, Text, Alert, Animated } from "react
 import { TextInput, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 import { AuthContext } from "../context/AuthContext";
-import SvgBasketball from "../../assets/svgs/SvgBasketball";
-import SvgGuitar from "../../assets/svgs/SvgGuitar";
+import SvgLoveLetter from "../../assets/svgs/SvgLoveLetter";
+import SvgBear from "../../assets/svgs/SvgBear";
+import SvgVinil from "../../assets/svgs/SvgVinil";
+import SvgRose from "../../assets/svgs/SvgRose";
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useContext(AuthContext);
@@ -12,23 +14,21 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  const translateY = useRef(new Animated.Value(0)).current;
   const translateYBottom = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateYBottom, {
-          toValue: 8,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateYBottom, {
-          toValue: 0,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
+    const startAnimation = (animatedValue, toValue, duration) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.timing(animatedValue, { toValue, duration, useNativeDriver: true }),
+          Animated.timing(animatedValue, { toValue: 0, duration, useNativeDriver: true }),
+        ])
+      ).start();
+    };
+
+    startAnimation(translateY, 10, 1500);
+    startAnimation(translateYBottom, 8, 1800);
   }, []);
 
   const handleRegister = async () => {
@@ -47,6 +47,13 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <LinearGradient colors={["#1E1E2E", "#141414"]} style={styles.container}>
+      <Animated.View style={[styles.svgTopLeft, { transform: [{ translateY }] }]}>
+        <SvgVinil width={50} height={50} />
+      </Animated.View>
+      <Animated.View style={[styles.svgTopRight, { transform: [{ translateY }] }]}>
+        <SvgRose width={40} height={40} />
+      </Animated.View>
+
       <Text style={styles.title}>Sign Up</Text>
 
       <View style={styles.card}>
@@ -58,10 +65,10 @@ const RegisterScreen = ({ navigation }) => {
         </Button>
 
         <Animated.View style={[styles.svgBottomLeft, { transform: [{ translateY: translateYBottom }] }]}>
-          <SvgBasketball width={50} height={50} />
+          <SvgLoveLetter width={40} height={40} />
         </Animated.View>
         <Animated.View style={[styles.svgBottomRight, { transform: [{ translateY: translateYBottom }] }]}>
-          <SvgGuitar width={50} height={50} />
+          <SvgBear width={40} height={40} />
         </Animated.View>
 
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
@@ -91,8 +98,20 @@ const styles = StyleSheet.create({
   button: { marginTop: 10, backgroundColor: "#E63946" },
   link: { textAlign: "center", marginTop: 10, fontSize: 14, color: "#ddd" },
   boldLink: { fontWeight: "bold", color: "#E63946" },
-  svgBottomLeft: { position: "absolute", bottom: 20, left: 20 },
-  svgBottomRight: { position: "absolute", bottom: 20, right: 20 },
+
+  svgTopLeft: { position: "absolute", top: 50, left: 20 },
+  svgTopRight: { position: "absolute", top: 50, right: 20 },
+
+  svgBottomLeft: { 
+    position: "absolute", 
+    bottom: -210,
+    left: -20 
+  },
+  svgBottomRight: { 
+    position: "absolute", 
+    bottom: -210,
+    right: -10 
+  },
 });
 
 export default RegisterScreen;

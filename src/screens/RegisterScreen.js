@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Animated } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, Animated, ActivityIndicator } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 import { AuthContext } from "../context/AuthContext";
@@ -15,6 +15,7 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ Добавляем состояние загрузки
 
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYBottom = useRef(new Animated.Value(0)).current;
@@ -56,13 +57,17 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
 
+    setError("");
+    setLoading(true); // ✅ Включаем загрузку
+
     try {
-      setError("");
       await register(email, password, name);
       navigation.replace("Profile");
     } catch (error) {
       setError("Ошибка регистрации. Попробуйте позже.");
       startErrorAnimation();
+    } finally {
+      setLoading(false); // ✅ Выключаем загрузку
     }
   };
 
@@ -101,7 +106,7 @@ const RegisterScreen = ({ navigation }) => {
       return "Пароль должен содержать хотя \nбы одну заглавную букву";
     }
     if (!hasNumber.test(password)) {
-      return "Пароль должен содержат \nхотя бы одну цифру";
+      return "Пароль должен содержать хотя \nбы одну цифру";
     }
     if (!hasSpecialChar.test(password)) {
       return "Пароль должен содержать хотя \nбы один спецсимвол (!@#$%^&*)";
@@ -132,9 +137,14 @@ const RegisterScreen = ({ navigation }) => {
           </Animated.View>
         ) : null}
 
-        <Button mode="contained" onPress={handleRegister} style={styles.button}>
-          Sign Up
-        </Button>
+        {/* ✅ Кнопка со спиннером */}
+        {loading ? (
+          <ActivityIndicator size="large" color="#E63946" />
+        ) : (
+          <Button mode="contained" onPress={handleRegister} style={styles.button} disabled={loading}>
+            Sign Up
+          </Button>
+        )}
 
         <Animated.View style={[styles.svgBottomLeft, { transform: [{ translateY: translateYBottom }] }]}>
           <SvgLoveLetter width={40} height={40} />
@@ -168,7 +178,6 @@ const styles = StyleSheet.create({
   },
   input: { marginBottom: 10, backgroundColor: "rgba(255, 255, 255, 0.91)" },
   button: { marginTop: 10, backgroundColor: "#E63946" },
-  hintText: { color: "#bbb", fontSize: 12, marginBottom: 10, textAlign: "left" },
   errorContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   link: { textAlign: "center", marginTop: 10, fontSize: 14, color: "#ddd" },
   boldLink: { fontWeight: "bold", color: "#E63946" },

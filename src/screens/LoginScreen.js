@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Animated } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, Animated, ActivityIndicator } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 import { AuthContext } from "../context/AuthContext";
@@ -14,6 +14,7 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYBottom = useRef(new Animated.Value(0)).current;
@@ -40,27 +41,17 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
 
-    const emailError = validateEmail(email);
-    if (emailError) {
-      setError(emailError);
-      startErrorAnimation();
-      return;
-    }
-
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
-      startErrorAnimation();
-      return;
-    }
+    setError(""); 
+    setLoading(true);
 
     try {
-      setError("");
       await login(email, password);
       navigation.replace("Profile");
     } catch (error) {
       setError("Неверный email или пароль");
       startErrorAnimation();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,24 +105,10 @@ const LoginScreen = ({ navigation }) => {
       <Text style={styles.title}>LoveSync</Text>
 
       <View style={styles.card}>
-        <TextInput
-          label="Your Email"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={styles.input}
-        />
-        <TextInput
-          label="Your Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={styles.input}
-        />
+        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" style={styles.input} />
+        <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
 
+        {/* Анимированная ошибка */}
         {error ? (
           <Animated.View style={[styles.errorContainer, { transform: [{ translateX: errorShake }] }]}>
             <SvgWarning width={24} height={24} color="#E63946" />
@@ -139,9 +116,14 @@ const LoginScreen = ({ navigation }) => {
           </Animated.View>
         ) : null}
 
-        <Button mode="contained" onPress={handleLogin} style={styles.button}>
-          Log in
-        </Button>
+        {/* ✅ Кнопка со спиннером */}
+        {loading ? (
+          <ActivityIndicator size="large" color="#E63946" />
+        ) : (
+          <Button mode="contained" onPress={handleLogin} style={styles.button} disabled={loading}>
+            Log in
+          </Button>
+        )}
 
         <Animated.View style={[styles.svgBottomLeft, { transform: [{ translateY: translateYBottom }] }]}>
           <SvgBasketball width={50} height={50} />

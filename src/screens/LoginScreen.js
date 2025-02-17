@@ -17,7 +17,7 @@ const LoginScreen = ({ navigation }) => {
 
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYBottom = useRef(new Animated.Value(0)).current;
-  const errorShake = useRef(new Animated.Value(0)).current; // <== Для анимации ошибки
+  const errorShake = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const startAnimation = (animatedValue, toValue, duration) => {
@@ -36,7 +36,21 @@ const LoginScreen = ({ navigation }) => {
   const handleLogin = async () => {
     if (!email || !password) {
       setError("Введите email и пароль");
-      startErrorAnimation(); 
+      startErrorAnimation();
+      return;
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setError(emailError);
+      startErrorAnimation();
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      startErrorAnimation();
       return;
     }
 
@@ -46,11 +60,10 @@ const LoginScreen = ({ navigation }) => {
       navigation.replace("Profile");
     } catch (error) {
       setError("Неверный email или пароль");
-      startErrorAnimation(); // <== Анимация при ошибке
+      startErrorAnimation();
     }
   };
 
-  // Функция анимации ошибки (эффект дрожания)
   const startErrorAnimation = () => {
     Animated.sequence([
       Animated.timing(errorShake, { toValue: 10, duration: 100, useNativeDriver: true }),
@@ -58,6 +71,35 @@ const LoginScreen = ({ navigation }) => {
       Animated.timing(errorShake, { toValue: 10, duration: 100, useNativeDriver: true }),
       Animated.timing(errorShake, { toValue: 0, duration: 100, useNativeDriver: true }),
     ]).start();
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Введите корректный email \n(example@mail.com)";
+    }
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    const minLength = /.{8,}/;
+    const hasUppercase = /[A-Z]/;
+    const hasNumber = /\d/;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (!minLength.test(password)) {
+      return "Пароль должен содержать минимум 8 символов";
+    }
+    if (!hasUppercase.test(password)) {
+      return "Пароль должен содержать хотя \nбы одну заглавную букву";
+    }
+    if (!hasNumber.test(password)) {
+      return "Пароль должен содержат \nхотя бы одну цифру";
+    }
+    if (!hasSpecialChar.test(password)) {
+      return "Пароль должен содержать хотя \nбы один спецсимвол (!@#$%^&*)";
+    }
+    return "";
   };
 
   return (
@@ -72,11 +114,24 @@ const LoginScreen = ({ navigation }) => {
       <Text style={styles.title}>LoveSync</Text>
 
       <View style={styles.card}>
-        {/* Поля ввода */}
-        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" style={styles.input} />
-        <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
+        <TextInput
+          label="Your Email"
+          value={email}
+          onChangeText={setEmail}
+          mode="outlined"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+        />
+        <TextInput
+          label="Your Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          mode="outlined"
+          style={styles.input}
+        />
 
-        {/* Анимированная SVG ошибки */}
         {error ? (
           <Animated.View style={[styles.errorContainer, { transform: [{ translateX: errorShake }] }]}>
             <SvgWarning width={24} height={24} color="#E63946" />
@@ -84,12 +139,10 @@ const LoginScreen = ({ navigation }) => {
           </Animated.View>
         ) : null}
 
-        {/* Кнопка логина */}
         <Button mode="contained" onPress={handleLogin} style={styles.button}>
           Log in
         </Button>
 
-        {/* Нижние SVG иконки */}
         <Animated.View style={[styles.svgBottomLeft, { transform: [{ translateY: translateYBottom }] }]}>
           <SvgBasketball width={50} height={50} />
         </Animated.View>
@@ -97,7 +150,6 @@ const LoginScreen = ({ navigation }) => {
           <SvgGuitar width={50} height={50} />
         </Animated.View>
 
-        {/* Ссылка на регистрацию */}
         <TouchableOpacity onPress={() => navigation.navigate("Register")}>
           <Text style={styles.link}>
             Don't have an account? <Text style={styles.boldLink}>Sign up</Text>
@@ -121,12 +173,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
-  input: { marginBottom: 15, backgroundColor: "rgba(255, 255, 255, 0.91)" },
+  input: { marginBottom: 10, backgroundColor: "rgba(255, 255, 255, 0.91)" },
   button: { marginTop: 10, backgroundColor: "#E63946" },
   link: { textAlign: "center", marginTop: 10, fontSize: 14, color: "#ddd" },
   boldLink: { fontWeight: "bold", color: "#E63946" },
   errorContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   errorText: { color: "#E63946", marginLeft: 5 },
+  hintText: { color: "#bbb", fontSize: 12, marginBottom: 10, textAlign: "left" },
   svgTopLeft: { position: "absolute", top: 50, left: 20 },
   svgTopRight: { position: "absolute", top: 50, right: 20 },
   svgBottomLeft: { 

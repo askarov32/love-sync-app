@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Alert, Animated } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, Animated } from "react-native";
 import { TextInput, Button } from "react-native-paper";
 import { LinearGradient } from "expo-linear-gradient";
 import { AuthContext } from "../context/AuthContext";
@@ -7,15 +7,19 @@ import SvgLoveLetter from "../../assets/svgs/SvgLoveLetter";
 import SvgBear from "../../assets/svgs/SvgBear";
 import SvgVinil from "../../assets/svgs/SvgVinil";
 import SvgRose from "../../assets/svgs/SvgRose";
+import SvgWarning from "../../assets/svgs/SvgWarning";
 
 const RegisterScreen = ({ navigation }) => {
   const { register } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
 
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYBottom = useRef(new Animated.Value(0)).current;
+  const errorShake = useRef(new Animated.Value(0)).current;
+  const svgScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const startAnimation = (animatedValue, toValue, duration) => {
@@ -33,16 +37,76 @@ const RegisterScreen = ({ navigation }) => {
 
   const handleRegister = async () => {
     if (!email || !password || !name) {
-      Alert.alert("Ошибка", "Все поля должны быть заполнены");
+      setError("Все поля должны быть заполнены");
+      startErrorAnimation();
+      return;
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setError(emailError);
+      startErrorAnimation();
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      startErrorAnimation();
       return;
     }
 
     try {
+      setError("");
       await register(email, password, name);
-      Alert.alert("Успех", "Вы зарегистрированы!");
+      navigation.replace("Profile");
     } catch (error) {
-      Alert.alert("Ошибка", error);
+      setError("Ошибка регистрации. Попробуйте позже.");
+      startErrorAnimation();
     }
+  };
+
+  const startErrorAnimation = () => {
+    Animated.sequence([
+      Animated.timing(errorShake, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(errorShake, { toValue: -10, duration: 100, useNativeDriver: true }),
+      Animated.timing(errorShake, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(errorShake, { toValue: 0, duration: 100, useNativeDriver: true }),
+    ]).start();
+
+    Animated.sequence([
+      Animated.timing(svgScale, { toValue: 1.2, duration: 200, useNativeDriver: true }),
+      Animated.timing(svgScale, { toValue: 1, duration: 200, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Введите корректный email \n(example@mail.com)";
+    }
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    const minLength = /.{8,}/;
+    const hasUppercase = /[A-Z]/;
+    const hasNumber = /\d/;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (!minLength.test(password)) {
+      return "Пароль должен содержать минимум 8 символов";
+    }
+    if (!hasUppercase.test(password)) {
+      return "Пароль должен содержать хотя \nбы одну заглавную букву";
+    }
+    if (!hasNumber.test(password)) {
+      return "Пароль должен содержат \nхотя бы одну цифру";
+    }
+    if (!hasSpecialChar.test(password)) {
+      return "Пароль должен содержать хотя \nбы один спецсимвол (!@#$%^&*)";
+    }
+    return "";
   };
 
   return (
@@ -58,8 +122,16 @@ const RegisterScreen = ({ navigation }) => {
 
       <View style={styles.card}>
         <TextInput label="Your Name" value={name} onChangeText={setName} mode="outlined" style={styles.input} />
-        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" style={styles.input} />
+        <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" autoCapitalize="none" style={styles.input} />
         <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
+
+        {error ? (
+          <Animated.View style={[styles.errorContainer, { transform: [{ translateX: errorShake }, { scale: svgScale }] }]}>
+            <SvgWarning width={24} height={24} color="#E63946" />
+            <Text style={styles.errorText}>{error}</Text>
+          </Animated.View>
+        ) : null}
+
         <Button mode="contained" onPress={handleRegister} style={styles.button}>
           Sign Up
         </Button>
@@ -94,8 +166,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
-  input: { marginBottom: 15, backgroundColor: "rgba(255, 255, 255, 0.05)" },
+  input: { marginBottom: 10, backgroundColor: "rgba(255, 255, 255, 0.91)" },
   button: { marginTop: 10, backgroundColor: "#E63946" },
+  hintText: { color: "#bbb", fontSize: 12, marginBottom: 10, textAlign: "left" },
+  errorContainer: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   link: { textAlign: "center", marginTop: 10, fontSize: 14, color: "#ddd" },
   boldLink: { fontWeight: "bold", color: "#E63946" },
 
@@ -112,6 +186,7 @@ const styles = StyleSheet.create({
     bottom: -210,
     right: -10 
   },
+  errorText: { color: "#E63946", marginLeft: 5 },
 });
 
 export default RegisterScreen;

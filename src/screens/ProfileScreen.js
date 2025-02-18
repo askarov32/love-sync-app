@@ -2,19 +2,16 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Button, Alert, StyleSheet, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
-import * as ImagePicker from "expo-image-picker";
 import { fetchProfile, uploadProfileImage } from "../utils/api";
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
-  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const userData = await fetchProfile();
         setUser(userData);
-        setProfileImage(userData.profileImage);
       } catch (error) {
         Alert.alert("Ошибка", error);
         navigation.navigate("Login");
@@ -23,37 +20,10 @@ const ProfileScreen = ({ navigation }) => {
     loadProfile();
   }, []);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setProfileImage(uri);
-      try {
-        await uploadProfileImage(user.id, uri);
-        Alert.alert("Успех", "Фото загружено!");
-      } catch (error) {
-        Alert.alert("Ошибка", error);
-      }
-    }
-  };
-
   return (
     <LinearGradient colors={["#1E1E2E", "#141414"]} style={styles.container}>
       {user ? (
         <View style={styles.card}>
-          <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
-            <Image
-              source={profileImage ? { uri: profileImage } : require("../../assets/placeholder.png")}
-              style={styles.profileImage}
-            />
-            <Text style={styles.changePhotoText}>Изменить фото</Text>
-          </TouchableOpacity>
           <Text style={styles.title}>{user.name}</Text>
           <Text style={styles.text}>Email: {user.email}</Text>
           <Button title="Выйти" onPress={async () => {
@@ -88,11 +58,6 @@ const styles = StyleSheet.create({
   imageContainer: {
     alignItems: "center",
     marginBottom: 15,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
   },
   changePhotoText: {
     color: "#E63946",

@@ -76,7 +76,7 @@ const SplashScreen = () => {
         </Svg>
       </Animated.View>
 
-      <Animated.Text style={[styles.text, { opacity }]}>LoveSync</Animated.Text>
+      <Animated.Text style={[styles.text, { opacity }]}>Near & Dear</Animated.Text>
     </LinearGradient>
   );
 };

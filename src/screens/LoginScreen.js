@@ -46,7 +46,7 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       await login(email, password);
-      navigation.replace("Profile");
+      navigation.replace("MainApp");
     } catch (error) {
       setError("Неверный email или пароль");
       startErrorAnimation();
@@ -108,7 +108,6 @@ const LoginScreen = ({ navigation }) => {
         <TextInput label="Your Email" value={email} onChangeText={setEmail} mode="outlined" keyboardType="email-address" style={styles.input} />
         <TextInput label="Your Password" value={password} onChangeText={setPassword} secureTextEntry mode="outlined" style={styles.input} />
 
-        {/* Анимированная ошибка */}
         {error ? (
           <Animated.View style={[styles.errorContainer, { transform: [{ translateX: errorShake }] }]}>
             <SvgWarning width={24} height={24} color="#E63946" />
@@ -116,7 +115,6 @@ const LoginScreen = ({ navigation }) => {
           </Animated.View>
         ) : null}
 
-        {/* ✅ Кнопка со спиннером */}
         {loading ? (
           <ActivityIndicator size="large" color="#E63946" />
         ) : (

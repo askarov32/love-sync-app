@@ -58,7 +58,7 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     setError("");
-    setLoading(true); // ✅ Включаем загрузку
+    setLoading(true);
 
     try {
       await register(email, password, name);
@@ -67,7 +67,7 @@ const RegisterScreen = ({ navigation }) => {
       setError("Ошибка регистрации. Попробуйте позже.");
       startErrorAnimation();
     } finally {
-      setLoading(false); // ✅ Выключаем загрузку
+      setLoading(false);
     }
   };
 
@@ -137,7 +137,6 @@ const RegisterScreen = ({ navigation }) => {
           </Animated.View>
         ) : null}
 
-        {/* ✅ Кнопка со спиннером */}
         {loading ? (
           <ActivityIndicator size="large" color="#E63946" />
         ) : (

@@ -1,80 +1,55 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Button, Alert, StyleSheet, Image, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { fetchProfile, uploadProfileImage } from "../utils/api";
+import { useNavigation } from "@react-navigation/native";
+import { AuthContext } from "../context/AuthContext";
+import SvgSettings from "../../assets/svgs/SvgSettings";
+import SvgNotifications from "../../assets/svgs/SvgNotifications";
+import SvgHelp from "../../assets/svgs/SvgHelp";
+import SvgFeedback from "../../assets/svgs/SvgFeedback";
 
-const ProfileScreen = ({ navigation }) => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const userData = await fetchProfile();
-        setUser(userData);
-      } catch (error) {
-        Alert.alert("Ошибка", error);
-        navigation.navigate("Login");
-      }
-    };
-    loadProfile();
-  }, []);
+const ProfileScreen = () => {
+  const { user, logout } = React.useContext(AuthContext);
+  const navigation = useNavigation();
 
   return (
     <LinearGradient colors={["#1E1E2E", "#141414"]} style={styles.container}>
-      {user ? (
-        <View style={styles.card}>
-          <Text style={styles.title}>{user.name}</Text>
-          <Text style={styles.text}>Email: {user.email}</Text>
-          <Button title="Выйти" onPress={async () => {
-            await AsyncStorage.removeItem("authToken");
-            navigation.navigate("Login");
-          }} />
-        </View>
-      ) : (
-        <Text style={styles.text}>Загрузка...</Text>
-      )}
+      <View style={styles.profileHeader}>
+        <Text style={styles.profileName}>{user?.name || "User"}</Text>
+        <Text style={styles.profileEmail}>{user?.email || "email@example.com"}</Text>
+      </View>
+
+      <View style={styles.menuContainer}>
+        <MenuItem icon={<SvgSettings width={24} height={24} />} text="Settings" onPress={() => navigation.navigate("Settings")} />
+        <MenuItem icon={<SvgNotifications width={24} height={24} />} text="Notifications" onPress={() => navigation.navigate("Notifications")} />
+        <MenuItem icon={<SvgHelp width={24} height={24} />} text="Help Center" onPress={() => navigation.navigate("HelpCenter")} />
+        <MenuItem icon={<SvgFeedback width={24} height={24} />} text="Give us feedback" onPress={() => navigation.navigate("Feedback")} />
+      </View>
+
+      <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+        <Text style={styles.logoutText}>Log out</Text>
+      </TouchableOpacity>
     </LinearGradient>
   );
 };
 
+const MenuItem = ({ icon, text, onPress }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    {icon}
+    <Text style={styles.menuText}>{text}</Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  card: {
-    width: "85%",
-    padding: 20,
-    borderRadius: 15,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    alignItems: "center",
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  changePhotoText: {
-    color: "#E63946",
-    fontSize: 14,
-    marginTop: 5,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 10,
-  },
-  text: {
-    fontSize: 16,
-    color: "#ddd",
-    marginBottom: 10,
-  },
+  container: { flex: 1, padding: 20 },
+  profileHeader: { alignItems: "center", marginBottom: 30 },
+  profileName: { fontSize: 22, fontWeight: "bold", color: "#fff" },
+  profileEmail: { fontSize: 14, color: "#bbb" },
+  menuContainer: { borderTopWidth: 1, borderColor: "#444", paddingTop: 20 },
+  menuItem: { flexDirection: "row", alignItems: "center", paddingVertical: 15 },
+  menuText: { color: "#fff", fontSize: 16, marginLeft: 10 },
+  logoutButton: { marginTop: 20, alignItems: "center" },
+  logoutText: { color: "#E63946", fontSize: 16, fontWeight: "bold" },
 });
 
 export default ProfileScreen;

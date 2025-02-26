@@ -15,7 +15,7 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // ✅ Добавляем состояние загрузки
+  const [loading, setLoading] = useState(false);
 
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYBottom = useRef(new Animated.Value(0)).current;
